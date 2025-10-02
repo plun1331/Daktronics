@@ -1,4 +1,5 @@
 import abc
+import time
 
 import serial
 
@@ -23,7 +24,7 @@ class Console(abc.ABC):
     def __init__(
         self,
         port_name: str,
-        baud_rate: int = 9600,
+        baud_rate: int = 19200,
         parity: str = serial.PARITY_NONE,
         data_bits: int = 8,
         read_interval: float | int = 0.01
@@ -79,7 +80,7 @@ class Omnisport2000(Console):
     def __init__(
         self,
         port_name: str,
-        baud_rate: int = 9600,
+        baud_rate: int = 19200,
         parity: str = serial.PARITY_NONE,
         data_bits: int = 8,
         read_interval: float | int = 0.01
@@ -122,6 +123,10 @@ class Omnisport2000(Console):
                     # the first message is always missing this data for some reason
                     message = b"00\x17" + message
                     first_message = False
+                    continue
+
+                if not message:
+                    continue  # Skip empty messages
 
                 # Process the message
                 processor.process_message(message)

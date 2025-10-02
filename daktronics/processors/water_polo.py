@@ -1,3 +1,5 @@
+from typing import Literal
+
 from .base import MessageProcessor
 
 __all__ = ("WaterPoloProcessor",)
@@ -8,15 +10,23 @@ class WaterPoloProcessor(MessageProcessor):
         message_id, unknown_digits, message_type, data = self.decode_message(message)
         match message_type:
             case "0042100000":
+                if data.strip() == "":
+                    data = "0:00"
+                if ":" not in data:
+                    data = "0:" + data
                 minutes, seconds = map(int, data.split(':'))
                 total_seconds = minutes * 60 + seconds
                 self.game_time(total_seconds)
                 print(f"  Game Time: {data} ({total_seconds} seconds)")
             case "0042100005":
-                seconds = int(data)
+                seconds = int(data) if data.strip() else None
                 self.shot_time(seconds)
                 print(f"  Shot Time: {data} ({seconds} seconds)")
             case "0042100010":
+                if data.strip() == "":
+                    data = "0:00"
+                if ":" not in data:
+                    data = "0:" + data
                 minutes, seconds = map(int, data.split(':'))
                 total_seconds = minutes * 60 + seconds
                 self.timeout_timer(total_seconds)
@@ -36,21 +46,25 @@ class WaterPoloProcessor(MessageProcessor):
                 else:
                     print(f"  Warning: Incomplete Timeouts Data: {data}")
             case "0042100023":
-                self.period(int(data))
+                self.period(int(data) if data != "R" else "R")
                 print(f"  Period: {data}")
             case "0042100024":  # Can be multiple
                 while data:
                     cap = data[:2].strip()
                     time = data[2:7].strip()
                     data = data[7:]
-                    self.home_penalty_timer(int(cap), int(time))
+                    if not time:
+                        continue
+                    self.home_penalty_timer(int(cap) if cap else None, int(time))
                     print(f"  Home Penalty Timer: Cap {cap} - {time}")
             case "0042100045":
                 while data:
                     cap = data[:2].strip()
                     time = data[2:7].strip()
                     data = data[7:]
-                    self.away_penalty_timer(int(cap), int(time))
+                    if not time:
+                        continue
+                    self.home_penalty_timer(int(cap) if cap else None, int(time))
                     print(f"  Away Penalty Timer: Cap {cap} - {time}")
             case "0042100066":
                 counts = {}
@@ -83,9 +97,9 @@ class WaterPoloProcessor(MessageProcessor):
         """
         pass
 
-    def shot_time(self, seconds: int) -> None:
+    def shot_time(self, seconds: int | None) -> None:
         """
-        Handle shot time update.
+        Handle shot time update. None indicates the shot clock should be turned off.
 
         :param seconds: Total game time in seconds.
         :return: None
@@ -123,18 +137,18 @@ class WaterPoloProcessor(MessageProcessor):
         """
         pass
 
-    def period(self, period: int) -> None:
+    def period(self, period: int | Literal["R"]) -> None:
         """
-        Handle period update.
+        Handle period update. R indicates rest period.
 
         :param period: The current period of the game.
         :return: None
         """
         pass
 
-    def home_penalty_timer(self, cap: int, seconds: int) -> None:
+    def home_penalty_timer(self, cap: int | None, seconds: int) -> None:
         """
-        Handle home penalty timer update.
+        Handle home penalty timer update. None indicates that the player number has not been entered into the console.
 
         :param cap: The cap number of the player with the penalty.
         :param seconds: The remaining penalty time in seconds.
@@ -142,9 +156,9 @@ class WaterPoloProcessor(MessageProcessor):
         """
         pass
 
-    def away_penalty_timer(self, cap: int, seconds: int) -> None:
+    def away_penalty_timer(self, cap: int | None, seconds: int) -> None:
         """
-        Handle away penalty timer update.
+        Handle away penalty timer update. None indicates that the player number has not been entered into the console.
 
         :param cap: The cap number of the player with the penalty.
         :param seconds: The remaining penalty time in seconds.
@@ -179,3 +193,7 @@ class WaterPoloProcessor(MessageProcessor):
         :return: None
         """
         pass
+
+
+# Ejection end -> sends ejection list
+# no horn
