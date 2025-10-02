@@ -17,11 +17,9 @@ class WaterPoloProcessor(MessageProcessor):
                 minutes, seconds = map(int, data.split(':'))
                 total_seconds = minutes * 60 + seconds
                 self.game_time(total_seconds)
-                print(f"  Game Time: {data} ({total_seconds} seconds)")
             case "0042100005":
                 seconds = int(data) if data.strip() else None
                 self.shot_time(seconds)
-                print(f"  Shot Time: {data} ({seconds} seconds)")
             case "0042100010":
                 if data.strip() == "":
                     data = "0:00"
@@ -30,24 +28,16 @@ class WaterPoloProcessor(MessageProcessor):
                 minutes, seconds = map(int, data.split(':'))
                 total_seconds = minutes * 60 + seconds
                 self.timeout_timer(total_seconds)
-                print(f"  Timeout Timer: {data} ({total_seconds} seconds)")
             case "0042100015":
                 home_score, away_score = data[0:2].strip(), data[2:4].strip()
                 self.score(int(home_score), int(away_score))
-                print(f"  Score: Home - {home_score}, Away - {away_score}")
             case "0042100019":
                 if len(data) >= 2:
                     home_timeouts, away_timeouts = data[0], data[1]
                     home_partial, away_partial = data[2], data[3]
                     self.timeouts_left(int(home_timeouts), int(away_timeouts), int(home_partial), int(away_partial))
-                    print(
-                        f"  Timeouts Left: Home - {home_timeouts}/{home_partial}, Away - {away_timeouts}/{away_partial}"
-                        )
-                else:
-                    print(f"  Warning: Incomplete Timeouts Data: {data}")
             case "0042100023":
                 self.period(int(data) if data != "R" else "R")
-                print(f"  Period: {data}")
             case "0042100024":  # Can be multiple
                 while data:
                     cap = data[:2].strip()
@@ -56,7 +46,6 @@ class WaterPoloProcessor(MessageProcessor):
                     if not time:
                         continue
                     self.home_penalty_timer(int(cap) if cap else None, int(time))
-                    print(f"  Home Penalty Timer: Cap {cap} - {time}")
             case "0042100045":
                 while data:
                     cap = data[:2].strip()
@@ -65,7 +54,6 @@ class WaterPoloProcessor(MessageProcessor):
                     if not time:
                         continue
                     self.home_penalty_timer(int(cap) if cap else None, int(time))
-                    print(f"  Away Penalty Timer: Cap {cap} - {time}")
             case "0042100066":
                 counts = {}
                 while data:
@@ -74,7 +62,6 @@ class WaterPoloProcessor(MessageProcessor):
                     data = data[3:]
                     counts[cap] = count
                 self.home_penalties({int(k): int(v) for k, v in counts.items()})
-                print("  Home Penalties: " + ", ".join([f"{k}: {v}" for k, v in counts.items()]))
             case "0042100141":
                 counts = {}
                 while data:
@@ -83,10 +70,8 @@ class WaterPoloProcessor(MessageProcessor):
                     data = data[3:]
                     counts[cap] = count
                 self.away_penalties({int(k): int(v) for k, v in counts.items()})
-                print("  Away Penalties: " + ", ".join([f"{k}: {v}" for k, v in counts.items()]))
             case _:
                 self.unknown_message(message_type, data)
-                print(f"  Unknown Message Type: {message_type}, Data: {data}")
 
     def game_time(self, seconds: int) -> None:
         """
