@@ -1,9 +1,11 @@
-import serial
 import abc
+
+import serial
+
 from .processors import MessageProcessor
 
-
 __all__ = ("Console", "Omnisport2000")
+
 
 class Console(abc.ABC):
     """
@@ -17,6 +19,7 @@ class Console(abc.ABC):
         data_bits (int): The number of data bits for the serial connection.
         read_interval (float): The interval in seconds between read attempts.
     """
+
     def __init__(
         self,
         port_name: str,

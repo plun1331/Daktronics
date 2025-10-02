@@ -1,7 +1,7 @@
 from .base import MessageProcessor
-import re
 
 __all__ = ("WaterPoloProcessor",)
+
 
 class WaterPoloProcessor(MessageProcessor):
     def process_message(self, message: bytes) -> None:
@@ -30,7 +30,9 @@ class WaterPoloProcessor(MessageProcessor):
                     home_timeouts, away_timeouts = data[0], data[1]
                     home_partial, away_partial = data[2], data[3]
                     self.timeouts_left(int(home_timeouts), int(away_timeouts), int(home_partial), int(away_partial))
-                    print(f"  Timeouts Left: Home - {home_timeouts}/{home_partial}, Away - {away_timeouts}/{away_partial}")
+                    print(
+                        f"  Timeouts Left: Home - {home_timeouts}/{home_partial}, Away - {away_timeouts}/{away_partial}"
+                        )
                 else:
                     print(f"  Warning: Incomplete Timeouts Data: {data}")
             case "0042100023":

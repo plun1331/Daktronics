@@ -3,10 +3,12 @@ import re
 
 __all__ = ("MessageProcessor",)
 
+
 class MessageProcessor(abc.ABC):
     """
     A base class for message processors to implement methods for handling console messages.
     """
+
     @staticmethod
     def decode_message(message: bytes) -> tuple[str | None, str | None, str, str]:
         """
@@ -17,13 +19,13 @@ class MessageProcessor(abc.ABC):
         """
         match = re.search(
             rb'(.{2})'  # 2 characters (Message ID?)
-            rb'\x17'    # ETB
-            rb'\x16'    # SYN
-            rb'([0-9]{8})?' # 8 Digits
-            rb'\x01'    # SOH
-            rb'([0-9]{10})' # 10 Digits (Message Type)
-            rb'\x02'    # STX
-            rb'(.*)',     # Data (arbitrary length)
+            rb'\x17'  # ETB
+            rb'\x16'  # SYN
+            rb'([0-9]{8})?'  # 8 Digits
+            rb'\x01'  # SOH
+            rb'([0-9]{10})'  # 10 Digits (Message Type)
+            rb'\x02'  # STX
+            rb'(.*)',  # Data (arbitrary length)
             message
         )
 
