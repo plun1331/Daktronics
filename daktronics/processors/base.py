@@ -1,4 +1,5 @@
 import abc
+import re
 
 __all__ = ("MessageProcessor",)
 
@@ -7,7 +8,7 @@ class MessageProcessor(abc.ABC):
     A base class for message processors to implement methods for handling console messages.
     """
     @staticmethod
-    def decode_message(message: bytes) -> tuple[str, str, str, str, str]:
+    def decode_message(message: bytes) -> tuple[str | None, str | None, str, str]:
         """
         Decode a console message into its components.
 
@@ -35,6 +36,7 @@ class MessageProcessor(abc.ABC):
         else:
             raise ValueError("Invalid message format")
 
+    @abc.abstractmethod
     def process_message(self, message: bytes) -> None:
         """
         Process an incoming message from the console.
