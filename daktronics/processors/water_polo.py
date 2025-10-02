@@ -4,101 +4,73 @@ import re
 __all__ = ("WaterPoloProcessor",)
 
 class WaterPoloProcessor(MessageProcessor):
-    @staticmethod
-    def decode_message(message: bytes) -> tuple[str, str, str, str, str]:
-        """
-        Decode a water polo message into its components.
-
-        :param message: The raw message bytes.
-        :return: A tuple containing (message_id, unknown_digits, message_type, data).
-        """
-        match = re.search(
-            rb'(.{2})'  # 2 characters (Message ID?)
-            rb'\x17'    # ETB
-            rb'\x16'    # SYN
-            rb'([0-9]{8})?' # 8 Digits
-            rb'\x01'    # SOH
-            rb'([0-9]{10})' # 10 Digits (Message Type)
-            rb'\x02'    # STX
-            rb'(.*)',     # Data (arbitrary length)
-            message
-        )
-
-        if match:
-            message_id = match.group(1).decode('ascii') if match.group(1) else None
-            unknown_digits = match.group(2).decode('ascii') if match.group(2) else None
-            message_type = match.group(3).decode('ascii')
-            data = match.group(4).decode('ascii')
-            return message_id, unknown_digits, message_type, data
-        else:
-            raise ValueError("Invalid message format")
-
     def process_message(self, message: bytes) -> None:
         message_id, unknown_digits, message_type, data = self.decode_message(message)
-        if message_type == "0042100000":
-            minutes, seconds = map(int, data.split(':'))
-            total_seconds = minutes * 60 + seconds
-            self.game_time(total_seconds)
-            print(f"  Game Time: {data} ({total_seconds} seconds)")
-        elif message_type == "0042100005":
-            seconds = int(data)
-            self.shot_time(seconds)
-            print(f"  Shot Time: {data} ({seconds} seconds)")
-        elif message_type == "0042100010":
-            minutes, seconds = map(int, data.split(':'))
-            total_seconds = minutes * 60 + seconds
-            self.timeout_timer(total_seconds)
-            print(f"  Timeout Timer: {data} ({total_seconds} seconds)")
-        elif message_type == "0042100015":
-            home_score, away_score = data[0:2].strip(), data[2:4].strip()
-            self.score(int(home_score), int(away_score))
-            print(f"  Score: Home - {home_score}, Away - {away_score}")
-        elif message_type == "0042100019":
-            if len(data) >= 2:
-                home_timeouts, away_timeouts = data[0], data[1]
-                home_partial, away_partial = data[2], data[3]
-                self.timeouts_left(int(home_timeouts), int(away_timeouts), int(home_partial), int(away_partial))
-                print(f"  Timeouts Left: Home - {home_timeouts}/{home_partial}, Away - {away_timeouts}/{away_partial}")
-            else:
-                print(f"  Warning: Incomplete Timeouts Data: {data}")
-        elif message_type == "0042100023":
-            self.period(int(data))
-            print(f"  Period: {data}")
-        elif message_type == "0042100024":  # Can be multiple
-            while data:
-                cap = data[:2].strip()
-                time = data[2:7].strip()
-                data = data[7:]
-                self.home_penalty_timer(int(cap), int(time))
-                print(f"  Home Penalty Timer: Cap {cap} - {time}")
-        elif message_type == "0042100045":
-            while data:
-                cap = data[:2].strip()
-                time = data[2:7].strip()
-                data = data[7:]
-                self.away_penalty_timer(int(cap), int(time))
-                print(f"  Away Penalty Timer: Cap {cap} - {time}")
-        elif message_type == "0042100066":
-            counts = {}
-            while data:
-                cap = data[:2].strip()
-                count = data[2:3].strip()
-                data = data[3:]
-                counts[cap] = count
-            self.home_penalties({int(k): int(v) for k, v in counts.items()})
-            print("  Home Penalties: " + ", ".join([f"{k}: {v}" for k, v in counts.items()]))
-        elif message_type == "0042100141":
-            counts = {}
-            while data:
-                cap = data[:2].strip()
-                count = data[2:3].strip()
-                data = data[3:]
-                counts[cap] = count
-            self.away_penalties({int(k): int(v) for k, v in counts.items()})
-            print("  Away Penalties: " + ", ".join([f"{k}: {v}" for k, v in counts.items()]))
-        else:
-            self.unknown_message(message_type, data)
-            print(f"  Unknown Message Type: {message_type}, Data: {data}")
+        match message_type:
+            case "0042100000":
+                minutes, seconds = map(int, data.split(':'))
+                total_seconds = minutes * 60 + seconds
+                self.game_time(total_seconds)
+                print(f"  Game Time: {data} ({total_seconds} seconds)")
+            case "0042100005":
+                seconds = int(data)
+                self.shot_time(seconds)
+                print(f"  Shot Time: {data} ({seconds} seconds)")
+            case "0042100010":
+                minutes, seconds = map(int, data.split(':'))
+                total_seconds = minutes * 60 + seconds
+                self.timeout_timer(total_seconds)
+                print(f"  Timeout Timer: {data} ({total_seconds} seconds)")
+            case "0042100015":
+                home_score, away_score = data[0:2].strip(), data[2:4].strip()
+                self.score(int(home_score), int(away_score))
+                print(f"  Score: Home - {home_score}, Away - {away_score}")
+            case "0042100019":
+                if len(data) >= 2:
+                    home_timeouts, away_timeouts = data[0], data[1]
+                    home_partial, away_partial = data[2], data[3]
+                    self.timeouts_left(int(home_timeouts), int(away_timeouts), int(home_partial), int(away_partial))
+                    print(f"  Timeouts Left: Home - {home_timeouts}/{home_partial}, Away - {away_timeouts}/{away_partial}")
+                else:
+                    print(f"  Warning: Incomplete Timeouts Data: {data}")
+            case "0042100023":
+                self.period(int(data))
+                print(f"  Period: {data}")
+            case "0042100024":  # Can be multiple
+                while data:
+                    cap = data[:2].strip()
+                    time = data[2:7].strip()
+                    data = data[7:]
+                    self.home_penalty_timer(int(cap), int(time))
+                    print(f"  Home Penalty Timer: Cap {cap} - {time}")
+            case "0042100045":
+                while data:
+                    cap = data[:2].strip()
+                    time = data[2:7].strip()
+                    data = data[7:]
+                    self.away_penalty_timer(int(cap), int(time))
+                    print(f"  Away Penalty Timer: Cap {cap} - {time}")
+            case "0042100066":
+                counts = {}
+                while data:
+                    cap = data[:2].strip()
+                    count = data[2:3].strip()
+                    data = data[3:]
+                    counts[cap] = count
+                self.home_penalties({int(k): int(v) for k, v in counts.items()})
+                print("  Home Penalties: " + ", ".join([f"{k}: {v}" for k, v in counts.items()]))
+            case "0042100141":
+                counts = {}
+                while data:
+                    cap = data[:2].strip()
+                    count = data[2:3].strip()
+                    data = data[3:]
+                    counts[cap] = count
+                self.away_penalties({int(k): int(v) for k, v in counts.items()})
+                print("  Away Penalties: " + ", ".join([f"{k}: {v}" for k, v in counts.items()]))
+            case _:
+                self.unknown_message(message_type, data)
+                print(f"  Unknown Message Type: {message_type}, Data: {data}")
 
     def game_time(self, seconds: int) -> None:
         """
