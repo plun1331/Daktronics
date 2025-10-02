@@ -1,6 +1,6 @@
 [project]
 name = "daktronics"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
     "pyserial~=3.5",
 ]
@@ -8,8 +8,8 @@ requires-python = ">=3.13"
 authors = [
     {name = "plun1331", email = "plun1331@gmail.com"},
 ]
-description = ""
-readme = "README.rst"
+description = "A Python library for reading data from Daktronics consoles."
+readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE.txt"]
 keywords = ["console", "daktronics", "scoreboard", "serial"]
