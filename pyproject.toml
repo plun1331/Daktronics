@@ -1,0 +1,26 @@
+[project]
+name = "daktronics"
+version = "1.0.0"
+dependencies = [
+    "pyserial~=3.5",
+]
+requires-python = ">=3.13"
+authors = [
+    {name = "plun1331", email = "plun1331@gmail.com"},
+]
+description = ""
+readme = "README.rst"
+license = "MIT"
+license-files = ["LICENSE.txt"]
+keywords = ["console", "daktronics", "scoreboard", "serial"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python"
+]
+
+[project.urls]
+Homepage = "https://github.com/plun1331/Daktronics/"
+#Documentation = "https://readthedocs.org"
+Repository = "https://github.com/plun1331/Daktronics/"
+"Bug Tracker" = "https://github.com/plun1331/Daktronics/issues"
+Changelog = "https://github.com/plun1331/Daktronics/tree/main/CHANGELOG.md"
