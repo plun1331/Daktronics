@@ -46,7 +46,7 @@ class WaterPoloProcessor(MessageProcessor):
                     data = data[7:]
                     if not time:
                         continue
-                    timers[int(cap) if cap else None] = time
+                    timers[int(cap) if cap else None] = int(time)
                 self.home_penalty_timer(timers)
             case "0042100045":
                 timers = {}
@@ -56,7 +56,7 @@ class WaterPoloProcessor(MessageProcessor):
                     data = data[7:]
                     if not time:
                         continue
-                    timers[int(cap) if cap else None] = time
+                    timers[int(cap) if cap else None] = int(time)
                 self.away_penalty_timer(timers)
             case "0042100066":
                 counts = {}

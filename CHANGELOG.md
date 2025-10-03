@@ -1,5 +1,10 @@
 # Changelog
 
+## `1.1.1` - 2025-10-03
+
+### Fixes
+- Fixed `WaterPoloProcessor.home/away_penalty_timer` to have integer values.
+
 ## `1.1.0` - 2025-10-03
 
 ### Changes
