@@ -29,18 +29,15 @@ class Console(abc.ABC):
         data_bits: int = 8,
         read_interval: float | int = 0.01
     ) -> None:
-        self.port_name = port_name
-        self.baud_rate = baud_rate
-        self.parity = parity
-        self.data_bits = data_bits
-        self.read_interval = read_interval
+        self.port_name: str = port_name
+        self.baud_rate: int = baud_rate
+        self.parity: str = parity
+        self.data_bits: int = data_bits
+        self.read_interval: float = read_interval
 
-    def connect(self) -> serial.Serial:
+    def connect(self) -> None:
         """
         Establish a connection to the console.
-
-        :return: The serial connection object.
-        :rtype: serial.Serial
         """
         raise NotImplementedError("Subclasses must implement this method.")
 
@@ -49,15 +46,12 @@ class Console(abc.ABC):
         Continuously read messages from the console and process them.
 
         :param processor: An instance of a MessageProcessor to handle incoming messages.
-        :return: None
-        :rtype: None
         """
         raise NotImplementedError("Subclasses must implement this method.")
 
     def close(self) -> None:
         """
         Close the serial connection to the console.
-        :rtype: None
         """
         raise NotImplementedError("Subclasses must implement this method.")
 
@@ -86,44 +80,42 @@ class Omnisport2000(Console):
         read_interval: float | int = 0.01
     ) -> None:
         super().__init__(port_name, baud_rate, parity, data_bits, read_interval)
-        self.serial_connection = None
-        self.read_allowed = False
+        self.serial_connection: serial.Serial | None = None
+        self.read_allowed: bool = False
 
     def connect(self) -> None:
-        self.serial_connection = serial.Serial(
+        self.serial_connection: serial.Serial = serial.Serial(
             port=self.port_name,
             baudrate=self.baud_rate,
             parity=self.parity,
             bytesize=self.data_bits,
             timeout=1
         )
-        return self.serial_connection
 
     def read(self, processor: MessageProcessor) -> None:
-        first_message = True
+        first_message: bool = True
         if self.read_allowed:
             raise RuntimeError("Read operation already in progress.")
         if self.serial_connection is None or not self.serial_connection.is_open:
             raise RuntimeError("Serial connection is not established. Call connect() first.")
 
-        message_buffer = bytearray()
-        self.read_allowed = True
+        message_buffer: bytearray = bytearray()
+        self.read_allowed: bool = True
 
         while self.read_allowed:
-            data = self.serial_connection.read(self.serial_connection.in_waiting or 1)
+            data: bytes = self.serial_connection.read(self.serial_connection.in_waiting or 1)
             if data:
                 message_buffer.extend(data)
 
             while b'\x04' in message_buffer:  # EOT is 0x04
-                eot_index = message_buffer.index(b'\x04')
-                message = message_buffer[:eot_index]
+                eot_index: int = message_buffer.index(b'\x04')
+                message: bytes = message_buffer[:eot_index]
                 message_buffer = message_buffer[eot_index + 1:]
 
                 if first_message:
                     # the first message is always missing this data for some reason
                     message = b"00\x17" + message
                     first_message = False
-                    continue
 
                 if not message:
                     continue  # Skip empty messages
