@@ -39,21 +39,25 @@ class WaterPoloProcessor(MessageProcessor):
             case "0042100023":
                 self.period(int(data) if data != "R" else "R")
             case "0042100024":  # Can be multiple
+                timers = {}
                 while data:
                     cap = data[:2].strip()
                     time = data[2:7].strip()
                     data = data[7:]
                     if not time:
                         continue
-                    self.home_penalty_timer(int(cap) if cap else None, int(time))
+                    timers[int(cap) if cap else None] = time
+                self.home_penalty_timer(timers)
             case "0042100045":
+                timers = {}
                 while data:
                     cap = data[:2].strip()
                     time = data[2:7].strip()
                     data = data[7:]
                     if not time:
                         continue
-                    self.home_penalty_timer(int(cap) if cap else None, int(time))
+                    timers[int(cap) if cap else None] = time
+                self.away_penalty_timer(timers)
             case "0042100066":
                 counts = {}
                 while data:
@@ -131,22 +135,20 @@ class WaterPoloProcessor(MessageProcessor):
         """
         pass
 
-    def home_penalty_timer(self, cap: int | None, seconds: int) -> None:
+    def home_penalty_timer(self, timers: dict[int | None, int]) -> None:
         """
         Handle home penalty timer update. None indicates that the player number has not been entered into the console.
 
-        :param cap: The cap number of the player with the penalty.
-        :param seconds: The remaining penalty time in seconds.
+        :param timers: A dictionary mapping cap numbers to their remaining penalty times in seconds.
         :return:
         """
         pass
 
-    def away_penalty_timer(self, cap: int | None, seconds: int) -> None:
+    def away_penalty_timer(self, timers: dict[int | None, int]) -> None:
         """
         Handle away penalty timer update. None indicates that the player number has not been entered into the console.
 
-        :param cap: The cap number of the player with the penalty.
-        :param seconds: The remaining penalty time in seconds.
+        :param timers: A dictionary mapping cap numbers to their remaining penalty times in seconds.
         :return:
         """
         pass

@@ -1,5 +1,10 @@
 # Changelog
 
+## `1.1.0` - 2025-10-03
+
+### Changes
+- Updated `WaterPoloProcessor.home/away_penalty_timer` to accept a dictionary of timers.
+
 ## `1.0.2` - 2025-10-03
 
 ### Typing
